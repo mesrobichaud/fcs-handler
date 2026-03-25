@@ -1,0 +1,8 @@
+__pycache__/
+data/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+*.pkl
+*.fcs
+.DS_Store
