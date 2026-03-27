@@ -66,6 +66,7 @@ class GateSet:
         src_adata,
         gate_names: list[str],
         n_quantiles: int = 500,
+        gate_ignore: list[str] | None = None,
     ) -> GateSet:
         """Create a GateSet that applies Aurora gates to a different instrument.
 
@@ -88,21 +89,29 @@ class GateSet:
             Which gates to include (with their parent hierarchy).
         n_quantiles : int
             Number of percentile points for the quantile mapping.
+        gate_ignore : list[str], optional
+            Gate names to exclude. If an ignored gate appears in the parent
+            hierarchy, it is skipped and the child becomes a root gate.
 
         Returns
         -------
         GateSet
             New GateSet whose gates use quantile transforms and remapped channels.
         """
+        ignore = set(gate_ignore or [])
         ref_df = _adata_to_df(ref_adata)
         src_df = _adata_to_df(src_adata)
 
-        # Collect all gates needed (including parents)
+        # Collect all gates needed (including parents), skipping ignored gates
         needed = set()
         for name in gate_names:
+            if name in ignore:
+                continue
             needed.add(name)
             g = source_gs[name]
             while g.parent and g.parent in source_gs.gates:
+                if g.parent in ignore:
+                    break
                 needed.add(g.parent)
                 g = source_gs[g.parent]
 
@@ -134,6 +143,11 @@ class GateSet:
         new_gates: dict[str, Gate] = {}
         for name in needed:
             gate = copy.deepcopy(source_gs[name])
+
+            # Clear parent if it was ignored or not included
+            if gate.parent and gate.parent not in needed:
+                gate.parent = None
+
             if isinstance(gate, NotGate):
                 # Re-link ref_gate to the new copy
                 if gate.ref_gate and gate.ref_gate.name in needed:
