@@ -216,8 +216,8 @@ class RectGate(Gate):
 
         dx = nx - cx
         dy = ny - cy
-        rx = cos_t * dx - sin_t * dy
-        ry = sin_t * dx + cos_t * dy
+        rx =  cos_t * dx + sin_t * dy
+        ry = -sin_t * dx + cos_t * dy
 
         return (np.abs(rx) <= hw) & (np.abs(ry) <= hh)
 
@@ -244,8 +244,8 @@ class EllipseGate(Gate):
 
         dx = nx - cx
         dy = ny - cy
-        rx = cos_t * dx - sin_t * dy
-        ry = sin_t * dx + cos_t * dy
+        rx =  cos_t * dx + sin_t * dy
+        ry = -sin_t * dx + cos_t * dy
 
         return (rx / a) ** 2 + (ry / b) ** 2 <= 1.0
 

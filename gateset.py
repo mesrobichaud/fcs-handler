@@ -3,9 +3,9 @@ GateSet: high-level interface for applying and visualising SpectroFlo gates.
 
 Example::
 
-    from experiment_handler import GateSet
+    from experiment_handler.gateset import GateSet
 
-    gs = GateSet.from_wtml('data/gating/MR_PLT.WTML')
+    gs = GateSet.from_wtml('processed_data/MR_PLT.WTML')
     gs.view(adata)
     adata_plt = gs.apply(adata, 'PLT')
     gs.plot(adata, 'PLT')
@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Ellipse, Rectangle
 from matplotlib.transforms import Affine2D
 
-from experiment_handler.gating import (
+from .gating import (
     Gate,
     EllipseGate,
     IntervalGate,
@@ -290,6 +290,7 @@ class GateSet:
         angle_deg: float = 0.0,
         lo: float = 0.0,
         hi: float = 1.0,
+        create_not: bool = False,
     ) -> None:
         """Add a new gate to the GateSet.
 
@@ -315,6 +316,8 @@ class GateSet:
             Rotation angle in degrees CCW (rect/ellipse).
         lo, hi : float
             Lower/upper bounds in normalised coordinates (interval).
+        create_not : bool
+            If True, also create a ``NOT(name)`` gate that inverts this gate.
         """
         if name in self._gates:
             raise ValueError(f"Gate '{name}' already exists")
@@ -356,6 +359,20 @@ class GateSet:
         self._gates[name] = gate
         if parent:
             self._gates[parent].children.append(gate)
+
+        if create_not:
+            not_name = f'NOT({name})'
+            not_gate = NotGate(
+                name=not_name,
+                gate_id='',
+                gate_type='not',
+                channels=[],
+                scales=[],
+                r_values=[],
+                parent=parent,
+                ref_gate=gate,
+            )
+            self._gates[not_name] = not_gate
 
     # -----------------------------------------------------------------
     # count
