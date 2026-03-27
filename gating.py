@@ -258,10 +258,8 @@ class IntervalGate(Gate):
 
     def apply(self, df: pd.DataFrame, **transform_kwargs) -> np.ndarray:
         tx = self._get_transform(0, **transform_kwargs)
-        lo_data = tx.norm_to_data(np.array([self.lo]))[0]
-        hi_data = tx.norm_to_data(np.array([self.hi]))[0]
-        values = df[self.channels[0]].values
-        return (values >= lo_data) & (values <= hi_data)
+        nx = tx.data_to_norm(df[self.channels[0]].values)
+        return (nx >= self.lo) & (nx <= self.hi)
 
 
 @dataclass
